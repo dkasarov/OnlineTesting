@@ -22,6 +22,7 @@ using Microsoft.IdentityModel.Tokens;
 using OnlineTesting.Data;
 using OnlineTesting.Entities;
 using OnlineTesting.Helpers;
+using OnlineTesting.Repositories;
 
 namespace OnlineTesting
 {
@@ -92,6 +93,7 @@ namespace OnlineTesting
 #pragma warning disable CS0618 // Type or member is obsolete
             services.AddAutoMapper();
 #pragma warning restore CS0618 // Type or member is obsolete
+            services.AddScoped<IAppRepository, AppRepository>();
             services.AddScoped<LogUserActivity>();
 
         }

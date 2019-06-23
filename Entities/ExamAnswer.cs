@@ -10,7 +10,6 @@ namespace OnlineTesting.Entities
     [Table("ExamAnswer")]
     public class ExamAnswer
     {
-        [Key]
         public int Id { get; set; }
 
         public ICollection<Exam> Exams { get; set; }

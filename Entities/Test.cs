@@ -10,7 +10,6 @@ namespace OnlineTesting.Entities
     [Table("Test")]
     public class Test
     {
-        [Key]
         public int Id { get; set; }
 
         public string Code { get; set; }
@@ -20,8 +19,6 @@ namespace OnlineTesting.Entities
         public DateTime DateAdded { get; set; }
 
         public DateTime ActiveToDateTime { get; set; }
-
-        public int Author { get; set; }
 
         public TimeSpan Time { get; set; }
 
@@ -36,5 +33,9 @@ namespace OnlineTesting.Entities
         public Category Category { get; set; }
 
         public ICollection<TestQuestion> TestQuestions { get; set; }
+
+        public int UserId { get; set; }
+
+        public User User { get; set; }
     }
 }

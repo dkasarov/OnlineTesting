@@ -10,7 +10,6 @@ namespace OnlineTesting.Entities
     [Table("TestQuestion")]
     public class TestQuestion
     {
-        [Key]
         public int Id { get; set; }
 
         public string Question { get; set; }

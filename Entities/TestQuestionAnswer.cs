@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace OnlineTesting.Entities
 {
-    [Table("TestQuestionType")]
+    [Table("TestQuestionAnswer")]
     public class TestQuestionAnswer
     {
-        [Key]
         public int Id { get; set; }
 
         public string Answer { get; set; }

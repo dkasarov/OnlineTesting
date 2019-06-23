@@ -10,7 +10,6 @@ namespace OnlineTesting.Entities
     [Table("Student")]
     public class Student
     {
-        [Key]
         public int Id { get; set; }
 
         public string FirstName { get; set; }

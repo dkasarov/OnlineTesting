@@ -43,5 +43,11 @@ namespace OnlineTesting.Entities
         public int UserId { get; set; }
 
         public User User { get; set; }
+
+        public Test()
+        {
+            DateAdded = DateTime.Now;
+            DateChanged = DateTime.Now;
+        }
     }
 }

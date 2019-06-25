@@ -17,6 +17,7 @@ namespace OnlineTesting.Helpers
             CreateMap<User, UserForListDto>();
             CreateMap<CategoryForCreationDto, Category>();
             CreateMap<UserForUpdateDto, User>();
+            CreateMap<TestForAddingDto, Test>();
         }
     }
 }

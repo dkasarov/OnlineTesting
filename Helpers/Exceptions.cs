@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,6 +32,28 @@ namespace OnlineTesting.Helpers
             if (theDateTime.AddYears(age) > DateTime.Today)
                 age--;
             return age;
+        }
+
+        public static byte[] ConvertPhotoToArray(this IFormFile photo)
+        {
+            if (photo.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    photo.CopyTo(ms);
+                    var fileBytes = ms.ToArray();
+                    //string s = Convert.ToBase64String(fileBytes);
+                    return fileBytes;
+                }
+            }
+            return new byte[0];
+        }
+
+        public static string ConvertPhotoToString(this byte[] photo)
+        {
+            string s = Convert.ToBase64String(photo);
+
+            return s;
         }
     }
 }

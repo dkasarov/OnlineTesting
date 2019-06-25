@@ -8,7 +8,6 @@ namespace OnlineTesting.Entities
 {
     public class User : IdentityUser<int>
     {
-
         public string City { get; set; }
 
         public string Country { get; set; }
@@ -27,7 +26,7 @@ namespace OnlineTesting.Entities
 
         public DateTime LastActive { get; set; }
 
-        public string Photo { get; set; }
+        public byte[] Photo { get; set; }
 
         public ICollection<UserRole> UserRoles { get; set; }
 

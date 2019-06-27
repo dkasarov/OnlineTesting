@@ -26,6 +26,12 @@ namespace OnlineTesting.Entities
 
         public string Hostname { get; set; }
 
+        public string PostalCode { get; set; }
+
+        public double Lat { get; set; }
+
+        public double Lng { get; set; }
+
         public ICollection<Exam> Exams { get; set; }
     }
 }

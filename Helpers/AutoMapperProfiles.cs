@@ -18,6 +18,13 @@ namespace OnlineTesting.Helpers
             CreateMap<CategoryForCreationDto, Category>();
             CreateMap<UserForUpdateDto, User>();
             CreateMap<TestForAddingDto, Test>();
+            CreateMap<QuestionForAddingDto, TestQuestion>();
+            CreateMap<AnswerForAddingDto, TestQuestionAnswer>();
+            CreateMap<Test, TestDetailsForUserDto>()
+                .ForMember(dest => dest.CategoryName, opt =>
+                {
+                    opt.MapFrom(c => c.Category.Name);
+                });
         }
     }
 }

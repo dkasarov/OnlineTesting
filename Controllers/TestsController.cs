@@ -20,17 +20,14 @@ namespace OnlineTesting.Controllers
     {
         private readonly DataContext _context;
         private readonly UserManager<User> _userManager;
-        private readonly IAppRepository _repo;
         private readonly IMapper _mapper;
 
         public TestsController(DataContext context,
             UserManager<User> userManager,
-            IAppRepository repo,
             IMapper mapper)
         {
             _context = context;
             _userManager = userManager;
-            _repo = repo;
             _mapper = mapper;
         }
 

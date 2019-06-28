@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace OnlineTesting.Dtos
 {
-    public class QuestionForAddingDto
+    public class QuestionForEditDto
     {
         [Required]
         public string Question { get; set; }
-
-        [Required]
-        public int TestId { get; set; }
 
         [Required]
         public int TestQuestionTypeId { get; set; }

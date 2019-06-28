@@ -16,7 +16,9 @@ namespace OnlineTesting.Entities
 
         public string LastName { get; set; }
 
-        public string IP { get; set; }
+        public string NetworkIP { get; set; }
+
+        public string LocalIP { get; set; }
 
         public string Country { get; set; }
 
@@ -32,6 +34,13 @@ namespace OnlineTesting.Entities
 
         public double Lng { get; set; }
 
+        public DateTime DateCreated { get; set; }
+
         public ICollection<Exam> Exams { get; set; }
+
+        public Student()
+        {
+            DateCreated = DateTime.Now;
+        }
     }
 }

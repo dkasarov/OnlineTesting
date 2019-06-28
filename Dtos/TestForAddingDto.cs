@@ -17,9 +17,6 @@ namespace OnlineTesting.Dtos
         [Required]
         public TimeSpan Time { get; set; }
 
-        [Required]
-        public int TryTimes { get; set; }
-
         public string Note { get; set; }
 
         [Required]

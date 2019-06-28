@@ -58,6 +58,33 @@ namespace OnlineTesting.Controllers
             return BadRequest();
         }
 
+        [HttpPut("editTest/{testId}")]
+        public async Task<IActionResult> EditTest(int testId, TestForAddingDto testForEditDto)
+        {
+            var test = await _context.Tests.FirstOrDefaultAsync(t => t.Id == testId);
+
+            if (test == null)
+                return NotFound();
+
+            if (test.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            test.Name = testForEditDto.Name;
+            test.ActiveToDateTime = testForEditDto.ActiveToDateTime;
+            test.Time = testForEditDto.Time;
+            test.Note = testForEditDto.Note;
+            test.Level = testForEditDto.Level;
+            test.ForCountry = testForEditDto.ForCountry;
+            test.ForCity = testForEditDto.ForCity;
+            test.CategoryId = testForEditDto.CategoryId;
+            test.DateChanged = DateTime.Now;
+
+            if (await _context.SaveChangesAsync() > 0)
+                return Ok(test);
+
+            return BadRequest();
+        }
+
         [HttpPost("addQuestion")]
         public async Task<IActionResult> AddQuestion(QuestionForAddingDto questionForAddingDto)
         {
@@ -83,6 +110,37 @@ namespace OnlineTesting.Controllers
                 return Ok(new
                 {
                     questionId = questionToAdd.Id
+                });
+            }
+
+            return BadRequest();
+        }
+
+        [HttpPut("editQuestion/{questionId}")]
+        public async Task<IActionResult> EditQuestion(int questionId, QuestionForEditDto questionForEditDto)
+        {
+            //Мапване с тест и тип въпрос
+            var question = await _context.TestQuestions
+                .Include(t => t.Test)
+                .FirstOrDefaultAsync(t => t.Id == questionId);
+            var questionType = await _context.TestQuestionTypes.FirstOrDefaultAsync(t => t.Id == questionForEditDto.TestQuestionTypeId);
+
+
+            if (question == null)
+                return NotFound();
+
+            if (question.Test.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            question.TestQuestionType = questionType;
+            question.Test = question.Test;
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                //Връщане на редактираният въпрос
+                return Ok(new
+                {
+                    questionId = question.Id
                 });
             }
 
@@ -152,24 +210,24 @@ namespace OnlineTesting.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             var questions = await (from testQuestion in _context.TestQuestions
-                        join testQuestionType in _context.TestQuestionTypes
-                        on testQuestion.TestQuestionTypeId equals testQuestionType.Id
-                        join test in _context.Tests
-                        on testQuestion.TestId equals test.Id
-                        where testQuestion.Test.UserId == userId && testQuestion.TestId == testId
-                        select new
-                        {
-                            testQuestionId = testQuestion.Id,
-                            question = testQuestion.Question,
-                            AnswerDetails = (from testQuestionAnswer in _context.TestQuestionAnswers
-                                            where testQuestionAnswer.TestQuestionId == testQuestion.Id
-                                            select new
-                                            {
-                                                answer = testQuestionAnswer.Answer,
-                                                isCorrect = testQuestionAnswer.IsCorrect
-                                            }).ToList(),
-                            testQuestionTypeId = testQuestionType.Id
-                        }).ToListAsync();
+                                   join testQuestionType in _context.TestQuestionTypes
+                                   on testQuestion.TestQuestionTypeId equals testQuestionType.Id
+                                   join test in _context.Tests
+                                   on testQuestion.TestId equals test.Id
+                                   where testQuestion.Test.UserId == userId && testQuestion.TestId == testId
+                                   select new
+                                   {
+                                       testQuestionId = testQuestion.Id,
+                                       question = testQuestion.Question,
+                                       AnswerDetails = (from testQuestionAnswer in _context.TestQuestionAnswers
+                                                        where testQuestionAnswer.TestQuestionId == testQuestion.Id
+                                                        select new
+                                                        {
+                                                            answer = testQuestionAnswer.Answer,
+                                                            isCorrect = testQuestionAnswer.IsCorrect
+                                                        }).ToList(),
+                                       testQuestionTypeId = testQuestionType.Id
+                                   }).ToListAsync();
 
             if (questions.Count() > 0)
                 return Ok(questions);

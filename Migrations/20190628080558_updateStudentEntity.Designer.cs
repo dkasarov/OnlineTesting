@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineTesting.Data;
 
 namespace OnlineTesting.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20190628080558_updateStudentEntity")]
+    partial class updateStudentEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,21 +194,17 @@ namespace OnlineTesting.Migrations
 
                     b.Property<string>("Country");
 
-                    b.Property<DateTime>("DateCreated");
-
                     b.Property<string>("FirstName");
 
                     b.Property<string>("Hostname");
+
+                    b.Property<string>("IP");
 
                     b.Property<string>("LastName");
 
                     b.Property<double>("Lat");
 
                     b.Property<double>("Lng");
-
-                    b.Property<string>("LocalIP");
-
-                    b.Property<string>("NetworkIP");
 
                     b.Property<string>("PostalCode");
 

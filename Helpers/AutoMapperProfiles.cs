@@ -25,6 +25,35 @@ namespace OnlineTesting.Helpers
                 {
                     opt.MapFrom(c => c.Category.Name);
                 });
+            CreateMap<GeolocationDto, Student>()
+                .ForMember(dest => dest.NetworkIP, opt =>
+                {
+                    opt.MapFrom(s => s.IP); //IP се взима от ipify.org
+                })
+                .ForMember(dest => dest.Country, opt =>
+                {
+                    opt.MapFrom(s => s.Location.Country);
+                })
+                .ForMember(dest => dest.City, opt =>
+                {
+                    opt.MapFrom(s => s.Location.City);
+                })
+                .ForMember(dest => dest.Region, opt =>
+                {
+                    opt.MapFrom(s => s.Location.Region);
+                })
+                .ForMember(dest => dest.PostalCode, opt =>
+                {
+                    opt.MapFrom(s => s.Location.PostalCode);
+                })
+                .ForMember(dest => dest.Lat, opt =>
+                {
+                    opt.MapFrom(s => s.Location.Lat);
+                })
+                .ForMember(dest => dest.Lng, opt =>
+                {
+                    opt.MapFrom(s => s.Location.Lng);
+                });
         }
     }
 }

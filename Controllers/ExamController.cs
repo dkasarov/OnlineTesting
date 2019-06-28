@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -8,6 +9,7 @@ using AutoMapper.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OnlineTesting.Data;
 using OnlineTesting.Dtos;
 using OnlineTesting.Entities;
@@ -35,29 +37,57 @@ namespace OnlineTesting.Controllers
             _repo = repo;
         }
 
+        [Obsolete]
         [AllowAnonymous]
-        [HttpPost("exam/{testId}")]
-        public IActionResult Exam(int testId, StudentForRegisterDto studNames)
+        [HttpPost("exam/{Id}")]
+        public async Task<IActionResult> Exam(int Id, StudentForRegisterDto studNames)
         {
+            //тест за решаване
+            var test = await _context.Tests.FirstOrDefaultAsync(t => t.Id == Id);
+
             //Вземане на данните за студентът от ipify.org
             var studentIp = _repo.GetUserIP();
 
-            Student studentForAdd = new Student();
+            //Client PC IP
+            string hostName = Dns.GetHostName(); // Retrive the Name of HOST
+            //Get the IP
+            string LocalIP = Dns.GetHostByName(hostName).AddressList[1].ToString();
 
             //Мапване на имената и данните от ipify.org
+            var studentForAdd = _mapper.Map<Student>(studentIp);
+            studentForAdd.LocalIP = LocalIP;
             studentForAdd.FirstName = studNames.FirstName;
             studentForAdd.LastName = studNames.LastName;
-            studentForAdd.IP = studentIp.IP;
-            studentForAdd.Country = studentIp.Location.Country;
-            studentForAdd.City = studentIp.Location.City;
-            studentForAdd.Region = studentIp.Location.Region;
-            studentForAdd.PostalCode = studentIp.Location.PostalCode;
-            studentForAdd.Lat = studentIp.Location.Lat;
-            studentForAdd.Lng = studentIp.Location.Lng;
 
-            //Вземане на теста - за проверка на TryTimes
+            //Дали съществува
+            if (test == null)
+                return NotFound();
 
-            return Ok(studentForAdd);
+            //Проверки за ограниченията за ползване - country, city
+            if (!String.IsNullOrEmpty(test.ForCountry) && test.ForCountry != studentForAdd.Country ||
+                !String.IsNullOrEmpty(test.ForCity) && test.ForCity != studentForAdd.City)
+                return BadRequest("You cannot do this test, bacause you are not in the right country or city");
+
+            var checkStudent = await (from stud in _context.Students
+                                      join exam in _context.Exams on stud.Id equals exam.StudentId
+                                      join question in _context.TestQuestions on exam.TestQuestionId equals question.Id
+                                      join tet in _context.Tests on question.TestId equals tet.Id
+                                      where stud.NetworkIP == studentForAdd.NetworkIP && stud.LocalIP == studentForAdd.LocalIP && tet.Id == Id
+                                      select true).FirstOrDefaultAsync();
+
+            if (checkStudent)
+                return BadRequest("You have already done this test");
+
+            await _context.Students.AddAsync(studentForAdd);
+
+            if (await _context.SaveChangesAsync() > 0)
+                return Ok(new
+                {
+                    studentId = studentForAdd.Id,
+                    testId = Id
+                });
+
+            return NotFound();
         }
 
 

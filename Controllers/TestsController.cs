@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
 namespace OnlineTesting.Controllers
@@ -19,14 +20,17 @@ namespace OnlineTesting.Controllers
     public class TestsController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IAppRepository _repo;
         private readonly UserManager<User> _userManager;
         private readonly IMapper _mapper;
 
         public TestsController(DataContext context,
+            IAppRepository repo,
             UserManager<User> userManager,
             IMapper mapper)
         {
             _context = context;
+            _repo = repo;
             _userManager = userManager;
             _mapper = mapper;
         }
@@ -74,8 +78,6 @@ namespace OnlineTesting.Controllers
             test.Time = testForEditDto.Time;
             test.Note = testForEditDto.Note;
             test.Level = testForEditDto.Level;
-            test.ForCountry = testForEditDto.ForCountry;
-            test.ForCity = testForEditDto.ForCity;
             test.CategoryId = testForEditDto.CategoryId;
             test.DateChanged = DateTime.Now;
 
@@ -233,6 +235,53 @@ namespace OnlineTesting.Controllers
                 return Ok(questions);
 
             return Unauthorized();
+        }
+
+        [HttpPost("addStudentToTest/{testId}")]
+        public async Task<IActionResult> AddStudentToTest(int testId, List<StudentToTestAddingDto> studentToTestAddingDto)
+        {
+            //Проверка за съществуването и личността на теста
+            var test = await _context.Tests.FirstOrDefaultAsync(t => t.Id == testId);
+
+            if (test == null)
+                return NotFound();
+
+            if (test.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            //Логнат потребител
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.Name).Value);
+
+            IEnumerable<StudentToTest> studentToTestForAdd = _mapper.Map<List<StudentToTest>>(studentToTestAddingDto);
+
+            foreach (var stud in studentToTestForAdd)
+            {
+                stud.Test = test;
+                stud.User = user;
+            }
+
+            await _context.StudentToTests.AddRangeAsync(studentToTestForAdd);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                //Изпращане на съобщение
+                var subject = "Test request";
+                var callbackUrl = String.Empty;
+                var body = String.Empty;
+
+                foreach (var stud in studentToTestForAdd)
+                {
+                    callbackUrl = $"https://localhost:44376/exams/{ stud.Id }";
+
+                    body = $"Make your test from " +
+                     $"<b><a href='{ HtmlEncoder.Default.Encode(callbackUrl) }'>here</a></b>";
+                    _repo.SendEmail(stud.Email, subject, body);
+                }
+
+                return Ok();
+            }
+
+            return BadRequest();
         }
     }
 }

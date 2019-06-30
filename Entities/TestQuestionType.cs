@@ -16,6 +16,8 @@ namespace OnlineTesting.Entities
 
         public int NumberOfAnswers { get; set; }
 
+        public string Type { get; set; }
+
         public ICollection<TestQuestion> TestQuestions { get; set; }
     }
 }

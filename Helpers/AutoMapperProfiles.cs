@@ -54,6 +54,7 @@ namespace OnlineTesting.Helpers
                 {
                     opt.MapFrom(s => s.Location.Lng);
                 });
+            CreateMap<StudentToTestAddingDto, StudentToTest>();
         }
     }
 }

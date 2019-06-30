@@ -12,10 +12,6 @@ namespace OnlineTesting.Entities
     {
         public int Id { get; set; }
 
-        public string FirstName { get; set; }
-
-        public string LastName { get; set; }
-
         public string NetworkIP { get; set; }
 
         public string LocalIP { get; set; }
@@ -37,6 +33,10 @@ namespace OnlineTesting.Entities
         public DateTime DateCreated { get; set; }
 
         public ICollection<Exam> Exams { get; set; }
+
+        public string StudentToTestId { get; set; }
+
+        public StudentToTest StudentToTest { get; set; }
 
         public Student()
         {

@@ -8,10 +8,25 @@
   <ItemGroup>
     <Compile Remove="Migrations\20190622135544_initialMigration.cs" />
     <Compile Remove="Migrations\20190622135544_initialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20190629084802_updateDatabase.cs" />
+    <Compile Remove="Migrations\20190629084802_updateDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20190629085134_updateDatabase.cs" />
+    <Compile Remove="Migrations\20190629085134_updateDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20190629085433_updateDatabase.cs" />
+    <Compile Remove="Migrations\20190629085433_updateDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20190629085609_updateDatabase.cs" />
+    <Compile Remove="Migrations\20190629085609_updateDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20190629091038_updateDatabase2.cs" />
+    <Compile Remove="Migrations\20190629091038_updateDatabase2.Designer.cs" />
+    <Compile Remove="Migrations\20190629091511_updateDatabase2.cs" />
+    <Compile Remove="Migrations\20190629091511_updateDatabase2.Designer.cs" />
+    <Compile Remove="Migrations\20190629091937_updateDatabase2.cs" />
+    <Compile Remove="Migrations\20190629091937_updateDatabase2.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="6.1.1" />
+    <PackageReference Include="MailKit" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />

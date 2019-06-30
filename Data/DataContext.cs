@@ -33,6 +33,8 @@ namespace OnlineTesting.Data
 
         public DbSet<ExamAnswer> ExamAnswers { get; set; }
 
+        public DbSet<StudentToTest> StudentToTests { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -54,6 +56,23 @@ namespace OnlineTesting.Data
 
             builder.Entity<Exam>()
                 .HasKey(k => new { k.StudentId, k.TestQuestionId, k.ExamAnswerId });
+
+            builder.Entity<StudentToTest>(studentToTests =>
+            {
+                studentToTests.HasKey(k => k.Id);
+
+                studentToTests
+                    .HasOne(u => u.User)
+                    .WithMany(s => s.StudentToTests)
+                    .HasForeignKey(us => us.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                studentToTests
+                    .HasOne(u => u.Test)
+                    .WithMany(s => s.StudentToTests)
+                    .HasForeignKey(us => us.TestId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             builder.Entity<Exam>()
                 .HasOne(u => u.ExamAnswer)

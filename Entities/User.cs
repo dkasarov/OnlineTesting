@@ -33,5 +33,7 @@ namespace OnlineTesting.Entities
         public ICollection<Test> Tests { get; set; }
 
         public ICollection<Article> Articles { get; set; }
+
+        public ICollection<StudentToTest> StudentToTests { get; set; }
     }
 }

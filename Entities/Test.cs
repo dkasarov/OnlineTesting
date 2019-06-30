@@ -30,10 +30,6 @@ namespace OnlineTesting.Entities
 
         public int Level { get; set; }
 
-        public string ForCountry { get; set; }
-
-        public string ForCity { get; set; }
-
         public int CategoryId { get; set; }
 
         public Category Category { get; set; }
@@ -43,6 +39,8 @@ namespace OnlineTesting.Entities
         public int UserId { get; set; }
 
         public User User { get; set; }
+
+        public ICollection<StudentToTest> StudentToTests { get; set; }
 
         public Test()
         {

@@ -9,6 +9,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using MailKit.Net.Smtp;
+using MailKit;
+using MimeKit;
 
 namespace OnlineTesting.Repositories
 {
@@ -68,6 +71,30 @@ namespace OnlineTesting.Repositories
             GeolocationDto model = JsonConvert.DeserializeObject<GeolocationDto>(resultData);
 
             return model;
+        }
+
+        public void SendEmail(string email, string subject, string body)
+        {
+            var message = new MimeMessage();
+
+            message.From.Add(new MailboxAddress("Online Testing", "denis.kasarov@gmail.com"));
+
+            message.To.Add(new MailboxAddress(subject, email));
+
+            message.Subject = subject;
+
+            var bodyBuilder = new BodyBuilder();
+            bodyBuilder.HtmlBody = body;
+
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect("smtp.gmail.com", 587, false);
+                client.Authenticate("denis.kasarov@gmail.com", "1224_kasarov");
+                client.Send(message);
+                client.Disconnect(true);
+            }
         }
     }
 }

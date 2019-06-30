@@ -13,6 +13,9 @@ namespace OnlineTesting.Repositories
         void Delete<T>(T entity) where T : class;
         Task<User> GetUser(int id, bool isCurrentUser);
         GeolocationDto GetUserIP();
+
+        void SendEmail(string toEmail, string subject, string body);
+
         Task<bool> SaveAll();
     }
 }

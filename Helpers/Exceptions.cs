@@ -19,19 +19,19 @@ namespace OnlineTesting.Helpers
             response.Headers.Add("Access-Control-Allow-Origin", "*");
         }
 
-        //public static void AddPagination(this HttpResponse response, int currentPage,
-        //    int itemsPerPage, int totalItems, int totalPages)
-        //{
-        //    var paginationHeader = new PaginationHeader(currentPage, itemsPerPage, totalItems, totalPages);
-        //    var camelCaseFormatter = new JsonSerializerSettings();
-        //    camelCaseFormatter.ContractResolver = new CamelCasePropertyNamesContractResolver();
-        //    response.Headers.Add("Pagination", JsonConvert.SerializeObject(paginationHeader, camelCaseFormatter));
-        //    response.Headers.Add("Access-Control-Expose-Headers", "Pagination");
-        //} 
-
-        public static void AddExam(this HttpResponse response, int studentId, int testId)
+        public static void AddPagination(this HttpResponse response, int currentPage,
+            int itemsPerPage, int totalItems, int totalPages)
         {
-            var examHeader = new ExamHeader(studentId, testId);
+            var paginationHeader = new PaginationHeader(currentPage, itemsPerPage, totalItems, totalPages);
+            var camelCaseFormatter = new JsonSerializerSettings();
+            camelCaseFormatter.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            response.Headers.Add("Pagination", JsonConvert.SerializeObject(paginationHeader, camelCaseFormatter));
+            response.Headers.Add("Access-Control-Expose-Headers", "Pagination");
+        }
+
+        public static void AddExam(this HttpResponse response, int studentId, int testId, string token)
+        {
+            var examHeader = new ExamHeader(studentId, testId, token);
             var camelCaseFormatter = new JsonSerializerSettings();
             camelCaseFormatter.ContractResolver = new CamelCasePropertyNamesContractResolver();
             response.Headers.Add("Exam", JsonConvert.SerializeObject(examHeader, camelCaseFormatter));

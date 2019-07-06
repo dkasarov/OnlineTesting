@@ -1,5 +1,6 @@
 ﻿using OnlineTesting.Dtos;
 using OnlineTesting.Entities;
+using OnlineTesting.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace OnlineTesting.Repositories
         GeolocationDto GetUserIP();
 
         void SendEmail(string toEmail, string subject, string body);
+
+        Task<PagedList<QuestionsForExamDto>> GetQuestion(ExamDto examDto, int pageNumber);
 
         Task<bool> SaveAll();
     }

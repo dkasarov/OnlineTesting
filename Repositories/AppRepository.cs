@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using MailKit.Net.Smtp;
 using MailKit;
 using MimeKit;
+using OnlineTesting.Helpers;
 
 namespace OnlineTesting.Repositories
 {
@@ -83,8 +84,16 @@ namespace OnlineTesting.Repositories
 
             message.Subject = subject;
 
+            string html = "<html><head><style type='text/css'> .body{background-color:#D3E3FC;}h1{margin:0;padding:0;}p{text-align: justify;font-size: 18px; } a.button{background-color: #D3E3FC;color: #333;text-decoration: none;padding: 5px 10px;border-radius: 4px;font-size: 18px; } a.button:hover{background-color: #d8d3fc;color: black; } @media only screen and (min-width: 1200px){div[class= content]{	width: 600px;} } @media only screen and (max-width: 1200px){div[class= content]{	width: 500px;} } @media only screen and (max-width: 992px){div[class= content]{	width: 400px;} } @media only screen and (max-width: 768px){div[class= content]{	width: 300px;} } @media only screen and (max-width: 576px){div[class= content]{	width: 90%;} } .content {border: 1px solid #00887A;border-radius: 4px;background-color: white;padding: 5px 15px;margin: 0 auto; } </style></head><body>" +
+                "<div class='body'>" +
+                "<div class='content'>" +
+                "<h1>" + subject + "</h1>" +
+                 body +
+                "<br><br><p style='text-align: center; font-size: 12px; margin: 0;'>Best Regards, Online Testing System " + DateTime.Now.Year + "</p>" +
+                "</div></div></body></html>";
+
             var bodyBuilder = new BodyBuilder();
-            bodyBuilder.HtmlBody = body;
+            bodyBuilder.HtmlBody = html;
 
             message.Body = bodyBuilder.ToMessageBody();
 
@@ -95,6 +104,31 @@ namespace OnlineTesting.Repositories
                 client.Send(message);
                 client.Disconnect(true);
             }
+        }
+
+        public async Task<PagedList<QuestionsForExamDto>> GetQuestion(ExamDto examDto, int pageNumber)
+        {
+            var testQuestions = (from test in _context.Tests
+                                 join tq in _context.TestQuestions on test.Id equals tq.TestId
+                                 join tyq in _context.TestQuestionTypes on tq.TestQuestionTypeId equals tyq.Id
+                                 join stt in _context.StudentToTests on test.Id equals stt.TestId
+                                 join s in _context.Students on stt.Id equals s.StudentToTestId
+                                 where test.Id == examDto.TestId && s.Id == examDto.StudentId
+                                 select new QuestionsForExamDto()
+                                 {
+                                     Id = tq.Id,
+                                     Question = tq.Question,
+                                     Answers = (from a in _context.TestQuestionAnswers
+                                                where a.TestQuestionId == tq.Id
+                                                select new Answer
+                                                {
+                                                    Id = a.Id,
+                                                    AnswerText = a.Answer
+                                                }).ToList(),
+                                     IsMultipleAnswer = tyq.Type == "radio" ? false : true
+                                 }).AsQueryable();
+
+            return await PagedList<QuestionsForExamDto>.CreateAsync(testQuestions, pageNumber, 1);
         }
     }
 }

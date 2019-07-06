@@ -273,8 +273,10 @@ namespace OnlineTesting.Controllers
                 {
                     callbackUrl = $"https://localhost:44376/exams/{ stud.Id }";
 
-                    body = $"Make your test from " +
-                     $"<b><a href='{ HtmlEncoder.Default.Encode(callbackUrl) }'>here</a></b>";
+                    body = $"<p>Hello,<br>" +
+                        $"You have been invited to make test in 'Online Testing System'. " +
+                        $"Click in the button below to start your test.</p>" +
+                     $"<a href='{ HtmlEncoder.Default.Encode(callbackUrl) }' class='button' style='text-align: center;'>Start Test Now</a>";
                     _repo.SendEmail(stud.Email, subject, body);
                 }
 

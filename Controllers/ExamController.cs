@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 
 namespace OnlineTesting.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class ExamController : ControllerBase
@@ -41,7 +42,6 @@ namespace OnlineTesting.Controllers
         }
 
         [Obsolete]
-        [AllowAnonymous]
         [HttpPost("startExam/{Id}")]
         public async Task<IActionResult> StartExam(string Id, StudentForRegisterDto studentForRegisterDto)
         {
@@ -88,27 +88,28 @@ namespace OnlineTesting.Controllers
 
             if (await _context.SaveChangesAsync() > 0)
             {
-                Response.AddExam(studentForAdd.Id, studentToTest.TestId);
+                Response.AddExam(studentForAdd.Id, studentToTest.TestId, Id);
 
-                return Ok();
+                return Ok(studentToTest.Test.Time);
             }
 
             return NotFound();
         }
 
-        [AllowAnonymous]
         [HttpGet("getMenu")]
         public async Task<IActionResult> GetMenu()
         {
             //Вземане на studentId и testId от header - exam
             ExamDto examDto = JsonConvert.DeserializeObject<ExamDto>(Request.Headers["Exam"]);
 
-            if (examDto.TestId == 0 || examDto.StudentId == 0)
+            if (examDto.TestId == 0 || examDto.StudentId == 0 || String.IsNullOrEmpty(examDto.Token))
                 return NotFound();
 
             var student = await _context.Students
                 .Include(stt => stt.StudentToTest)
-                .FirstOrDefaultAsync(s => s.Id == examDto.StudentId && s.StudentToTest.TestId == examDto.TestId);
+                .FirstOrDefaultAsync(s => s.Id == examDto.StudentId
+                && s.StudentToTest.TestId == examDto.TestId
+                && s.StudentToTest.Id == examDto.Token);
 
             if (student == null)
                 return Unauthorized();
@@ -130,44 +131,109 @@ namespace OnlineTesting.Controllers
             });
         }
 
-        [AllowAnonymous]
-        [HttpGet("getQuestions")]
-        public async Task<IActionResult> GetQuestions()
+        [HttpGet("getQuestion")]
+        public async Task<IActionResult> GetQuestion([FromQuery]int pageNumber)
         {
             //Вземане на studentId и testId от header - exam
             ExamDto examDto = JsonConvert.DeserializeObject<ExamDto>(Request.Headers["Exam"]);
 
-            if (examDto.TestId == 0 || examDto.StudentId == 0)
+            if (examDto.TestId == 0 || examDto.StudentId == 0 || String.IsNullOrEmpty(examDto.Token))
                 return NotFound();
 
             var student = await _context.Students
                 .Include(stt => stt.StudentToTest)
-                .FirstOrDefaultAsync(s => s.Id == examDto.StudentId && s.StudentToTest.TestId == examDto.TestId);
+                .FirstOrDefaultAsync(s => s.Id == examDto.StudentId
+                && s.StudentToTest.TestId == examDto.TestId
+                && s.StudentToTest.Id == examDto.Token);
 
             if (student == null)
                 return Unauthorized();
 
-            var testQuestions = await (from test in _context.Tests
-                                       join tq in _context.TestQuestions on test.Id equals tq.TestId
-                                       join tyq in _context.TestQuestionTypes on tq.TestQuestionTypeId equals tyq.Id
-                                       join stt in _context.StudentToTests on test.Id equals stt.TestId
-                                       join s in _context.Students on stt.Id equals s.StudentToTestId
-                                       where test.Id == examDto.TestId && s.Id == examDto.StudentId
-                                       select new QuestionsForExamDto()
-                                       {
-                                           Id = tq.Id,
-                                           Question = tq.Question,
-                                           Answers = (from a in _context.TestQuestionAnswers
-                                                      where a.TestQuestionId == tq.Id
-                                                      select new Answer
-                                                      {
-                                                          Id = a.Id,
-                                                          AnswerText = a.Answer
-                                                      }).ToList(),
-                                           IsMultipleAnswer = tyq.Type == "radio" ? false : true
-                                       }).ToListAsync();
+            var question = await _repo.GetQuestion(examDto, pageNumber);
 
-            return Ok(testQuestions);
+            if (question.Count() == 0)
+                return NotFound();
+
+            Response.AddPagination(question.CurrentPage, question.PageSize,
+                question.TotalCount, question.TotalPages);
+
+            return Ok(question);
+        }
+
+        [HttpPost("writeAnswer")]
+        public async Task<IActionResult> WriteAnswer(WriteAnswersDto writeAnswersDto)
+        {
+            //Вземане на studentId и testId от header - exam
+            ExamDto examDto = JsonConvert.DeserializeObject<ExamDto>(Request.Headers["Exam"]);
+
+            if (examDto.TestId == 0 || examDto.StudentId == 0 || String.IsNullOrEmpty(examDto.Token))
+                return NotFound();
+
+            var student = await _context.Students
+                .Include(stt => stt.StudentToTest)
+                .FirstOrDefaultAsync(s => s.Id == examDto.StudentId
+                && s.StudentToTest.TestId == examDto.TestId
+                && s.StudentToTest.Id == examDto.Token);
+
+            if (student == null)
+                return Unauthorized();
+
+            var question = await _context.TestQuestions
+                .Include(tqa => tqa.TestQuestionAnswers)
+                .Include(tqt => tqt.TestQuestionType)
+                .FirstOrDefaultAsync(tq => tq.Id == writeAnswersDto.Id);
+
+            int studentAnswers = writeAnswersDto.Answers.Count();
+
+            //Проверява дали броят на отговорите не превишата с този на типът тест
+            if (question.TestQuestionType.NumberOfAnswers < studentAnswers)
+                return BadRequest("You cheat!");
+
+            var examAnswersForStudent = await _context.Exams
+                .Include(ea => ea.ExamAnswer)
+                .Where(e => e.StudentId == examDto.StudentId &&
+                    e.TestQuestionId == writeAnswersDto.Id)
+                .ToListAsync();
+
+            //Изтриване на старите отговори ако съществуват
+            if (examAnswersForStudent.Count() != 0)
+                _context.RemoveRange(examAnswersForStudent);
+
+            //Entities за запис в базата
+            ExamAnswer examAnswerToAdd = new ExamAnswer();
+            Exam examToAdd = new Exam();
+
+            foreach (var answer in writeAnswersDto.Answers)
+            {
+                //Мапване с въпрос
+                var testQuestionAnswerForAdd = await _context.TestQuestionAnswers
+                    .FirstOrDefaultAsync(q => q.Id == answer);
+                examAnswerToAdd = new ExamAnswer
+                {
+                    TestQuestionAnswer = testQuestionAnswerForAdd
+                };
+
+                //Проверява дали ид на отговорите дадени от студентът отговарят на тези в базата за въпроса
+                var questionsToCheck = question.TestQuestionAnswers.ToList();
+                if (!questionsToCheck.Contains(testQuestionAnswerForAdd))
+                    return BadRequest("You cheat");
+
+                await _context.ExamAnswers.AddAsync(examAnswerToAdd);
+
+                examToAdd = new Exam
+                {
+                    ExamAnswer = examAnswerToAdd,
+                    Student = student,
+                    TestQuestion = question
+                };
+
+                await _context.Exams.AddAsync(examToAdd);
+            }
+
+            if (await _context.SaveChangesAsync() > 0)
+                return Ok();
+
+            return BadRequest();
         }
     }
 }

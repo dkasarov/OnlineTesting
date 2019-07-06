@@ -9,5 +9,6 @@ namespace OnlineTesting.Dtos
     {
         public int StudentId { get; set; }
         public int TestId { get; set; }
+        public string Token { get; set; }
     }
 }
